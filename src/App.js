@@ -1,27 +1,49 @@
-import React from 'react';
-import styled from 'styled-components'
+import React, { Fragment } from 'react'
+import * as Routes from './routes'
+import { createBrowserHistory } from 'history'
+import { Router, Route, Redirect } from 'react-router-dom'
 
-function App() {
+const PrivateRoute = ({ component: Component, ...params }) => {
   return (
-    <HomeSection>
-      <Title>
-        RPG SYSTEM HOMEPAGE
-      </Title>
-    </HomeSection>
+    <Route
+      {...params}
+      render={props =>
+        localStorage.getItem('@rpgAuth:token') ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to='/login' />
+        )
+      }
+    />
   )
 }
 
-const HomeSection = styled.section`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100vw;
-  height: 100vh;
-`
-const Title = styled.h1`
-  font-size: 40px;
-  font-weight: bold;
-  color: #000;
-`
+const PublicRoute = ({ component: Component, ...params }) => {
+  return (
+    <Route
+      {...params}
+      render={props =>
+        !localStorage.getItem('@rpgAuth:token') ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to='/homepage' />
+        )
+      }
+    />
+  )
+}
+
+const App = () => {
+  const history = createBrowserHistory()
+  return (
+    <Router history={history}>
+      <Fragment>
+        <PublicRoute path='/login' component={Routes.Login} />
+
+        <PrivateRoute path='/' component={Routes.Homepage} />
+      </Fragment>
+    </Router>
+  )
+}
 
 export default App
